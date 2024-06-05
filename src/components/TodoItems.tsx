@@ -10,14 +10,14 @@ interface Props {
 }
 
 export const TodoItem: React.FC<Props> = ({ todo }) => {
-  const { processingIds, setTodos, handleError, handleDeleteTodo } =
+  const { processingIds, setTodos, handleError, handleDeleteTodo, isLoading } =
     useTodosContext();
 
   const [queryEditing, setQueryEditing] = useState(todo.title);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoader, setIsLoader] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const loaderIsActive =
-    processingIds.includes(todo.id) || todo.id === 0 || isLoading;
+    processingIds.includes(todo.id) || todo.id === 0 || isLoader || isLoading;
 
   const inputTodoRef = useRef<HTMLInputElement>(null);
 
@@ -28,7 +28,7 @@ export const TodoItem: React.FC<Props> = ({ todo }) => {
   }, [isEditing]);
 
   const updateTodoCompleteValue = (itemID: number) => {
-    setIsLoading(true);
+    setIsLoader(true);
 
     const newTodo = {
       ...todo,
@@ -48,7 +48,7 @@ export const TodoItem: React.FC<Props> = ({ todo }) => {
       })
       .finally(() => {
         inputTodoRef.current?.focus();
-        setIsLoading(false);
+        setIsLoader(false);
       });
   };
 
@@ -56,7 +56,7 @@ export const TodoItem: React.FC<Props> = ({ todo }) => {
     const trimedQueryEditing = queryEditing.trim();
 
     if (trimedQueryEditing === todo.title) {
-      setIsLoading(false);
+      setIsLoader(false);
       setIsEditing(false);
     }
 
@@ -81,7 +81,7 @@ export const TodoItem: React.FC<Props> = ({ todo }) => {
         })
         .finally(() => {
           inputTodoRef.current?.focus();
-          setIsLoading(false);
+          setIsLoader(false);
         });
     }
 
@@ -98,7 +98,7 @@ export const TodoItem: React.FC<Props> = ({ todo }) => {
     }
 
     if (event.key === 'Enter') {
-      setIsLoading(true);
+      setIsLoader(true);
       saveInputValue();
     }
   };
@@ -110,14 +110,14 @@ export const TodoItem: React.FC<Props> = ({ todo }) => {
   };
 
   const handleBlurInput = () => {
-    setIsLoading(true);
+    setIsLoader(true);
     saveInputValue();
     setIsEditing(false);
   };
 
   const handleClickOnRemoveButton = () => {
     handleDeleteTodo(todo.id);
-    setIsLoading(true);
+    setIsLoader(true);
   };
 
   return (

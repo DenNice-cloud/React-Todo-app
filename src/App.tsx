@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { TodoList } from './components/TodoList';
 import { Footer } from './components/Footer';
 import { ErrorNotification } from './components/ErrorNotification';
@@ -19,9 +19,10 @@ export const App: React.FC = () => {
     handleError,
     setTempTodo,
     processingIds,
+    isLoading,
+    setIsLoading,
   } = useTodosContext();
 
-  const [isLoading, setIsLoading] = useState(false);
   const completedTodos = todos.filter(todo => todo.completed);
   const activeTodos = todos.filter(todo => !todo.completed);
   const isClassActive = !!completedTodos.length && !activeTodos.length;

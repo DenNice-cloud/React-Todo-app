@@ -81,10 +81,14 @@ export const TodosProvider: React.FC<Props> = ({ children }) => {
       })
       .catch(() => {
         handleError(ErrorMessages.DeleteTodo);
+      })
+      .finally(() => {
+        setIsLoading(false);
       });
   };
 
   const handleDeleteTodoFooter = (ItemId: number) => {
+    setIsLoading(true);
     setProcessingIds(prevIds => [...prevIds, ItemId]);
 
     handleDeleteTodo(ItemId);
