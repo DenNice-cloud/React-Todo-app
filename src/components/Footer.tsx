@@ -8,12 +8,12 @@ interface Props {
 }
 
 export const Footer: React.FC<Props> = ({ itemsLeft }) => {
-  const { todos, handleDeleteTodoFooter } = useTodosContext();
+  const { todos, handleDeleteTodo } = useTodosContext();
 
   const completedTodos = todos.filter(todo => todo.completed);
 
   const hendlerDeleteTodos = () => {
-    completedTodos.forEach(todo => handleDeleteTodoFooter(todo.id));
+    completedTodos.forEach(todo => handleDeleteTodo(todo.id));
   };
 
   return (

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { TodoList } from './components/TodoList';
 import { Footer } from './components/Footer';
 import { ErrorNotification } from './components/ErrorNotification';
@@ -19,9 +19,9 @@ export const App: React.FC = () => {
     handleError,
     setTempTodo,
     processingIds,
-    isLoading,
-    setIsLoading,
+    setProcessingIds,
   } = useTodosContext();
+  const [isLoaded, setIsLoaded] = useState<boolean>(false);
 
   const completedTodos = todos.filter(todo => todo.completed);
   const activeTodos = todos.filter(todo => !todo.completed);
@@ -35,7 +35,7 @@ export const App: React.FC = () => {
 
   useEffect(() => {
     focusInput();
-  }, [todos.length, processingIds.length, isLoading]);
+  }, [todos.length, processingIds.length, isLoaded]);
 
   if (!USER_ID) {
     return <UserWarning />;
@@ -51,7 +51,7 @@ export const App: React.FC = () => {
       return;
     }
 
-    setIsLoading(true);
+    setIsLoaded(true);
 
     const newItem = {
       userId: USER_ID,
@@ -72,7 +72,7 @@ export const App: React.FC = () => {
       })
       .finally(() => {
         setTempTodo(null);
-        setIsLoading(false);
+        setIsLoaded(false);
       });
   };
 
@@ -82,6 +82,8 @@ export const App: React.FC = () => {
 
   const toggleAllTodosCompletionStatus = (currentTodos: Todo[]) => {
     currentTodos.forEach(currentTodo => {
+      setProcessingIds(prevState => [...prevState, currentTodo.id]);
+
       const newTodo = {
         ...currentTodo,
         completed: !currentTodo.completed,
@@ -100,14 +102,14 @@ export const App: React.FC = () => {
         })
         .finally(() => {
           focusInput();
-          setIsLoading(false);
+          setProcessingIds(prevState =>
+            prevState.filter(element => element !== currentTodo.id),
+          );
         });
     });
   };
 
   const handleCheckAll = () => {
-    setIsLoading(true);
-
     if (activeTodos.length > 0) {
       toggleAllTodosCompletionStatus(activeTodos);
     } else {
@@ -141,7 +143,7 @@ export const App: React.FC = () => {
               placeholder="What needs to be done?"
               value={query}
               onChange={handleQueryChange}
-              disabled={isLoading}
+              disabled={!!processingIds.length}
             />
           </form>
         </header>

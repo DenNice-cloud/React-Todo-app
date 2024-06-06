@@ -24,12 +24,9 @@ export type TodosContextType = {
   handleError: (value: string) => void;
   query: string;
   setQuery: (value: string) => void;
-  isLoading: boolean;
-  setIsLoading: (value: boolean) => void;
   handleDeleteTodo: (ItemId: number) => void;
-  handleDeleteTodoFooter: (ItemId: number) => void;
   processingIds: number[];
-  setProcessingIds: (value: number[]) => void;
+  setProcessingIds: React.Dispatch<React.SetStateAction<number[]>>;
 };
 
 export const TodosContext = createContext<TodosContextType | undefined>(
@@ -57,7 +54,6 @@ export const TodosProvider: React.FC<Props> = ({ children }) => {
   const [tempTodo, setTempTodo] = useState<Todo | null>(null);
   const [query, setQuery] = useState<string>('');
 
-  const [isLoading, setIsLoading] = useState<boolean>(false);
   const [processingIds, setProcessingIds] = useState<number[]>([]);
 
   const handleError = (message: string) => {
@@ -75,6 +71,8 @@ export const TodosProvider: React.FC<Props> = ({ children }) => {
   }, []);
 
   const handleDeleteTodo = (ItemId: number) => {
+    setProcessingIds(prevState => [...prevState, ItemId]);
+
     deleteTodo(ItemId)
       .then(() => {
         setTodos(prevTodos => prevTodos.filter(values => values.id !== ItemId));
@@ -83,16 +81,10 @@ export const TodosProvider: React.FC<Props> = ({ children }) => {
         handleError(ErrorMessages.DeleteTodo);
       })
       .finally(() => {
-        setIsLoading(false);
+        setProcessingIds(prevState =>
+          prevState.filter(element => element !== ItemId),
+        );
       });
-  };
-
-  const handleDeleteTodoFooter = (ItemId: number) => {
-    setIsLoading(true);
-    setProcessingIds(prevIds => [...prevIds, ItemId]);
-
-    handleDeleteTodo(ItemId);
-    setProcessingIds(prevIds => prevIds.filter(id => id !== ItemId));
   };
 
   const value = {
@@ -107,10 +99,7 @@ export const TodosProvider: React.FC<Props> = ({ children }) => {
     setStatus,
     query,
     setQuery,
-    isLoading,
-    setIsLoading,
     handleDeleteTodo,
-    handleDeleteTodoFooter,
     processingIds,
     setProcessingIds,
   };

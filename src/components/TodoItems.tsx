@@ -10,14 +10,17 @@ interface Props {
 }
 
 export const TodoItem: React.FC<Props> = ({ todo }) => {
-  const { processingIds, setTodos, handleError, handleDeleteTodo, isLoading } =
-    useTodosContext();
+  const {
+    processingIds,
+    setTodos,
+    handleError,
+    handleDeleteTodo,
+    setProcessingIds,
+  } = useTodosContext();
 
   const [queryEditing, setQueryEditing] = useState(todo.title);
-  const [isLoader, setIsLoader] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
-  const loaderIsActive =
-    processingIds.includes(todo.id) || todo.id === 0 || isLoader || isLoading;
+  const loaderIsActive = processingIds.includes(todo.id) || todo.id === 0;
 
   const inputTodoRef = useRef<HTMLInputElement>(null);
 
@@ -26,14 +29,13 @@ export const TodoItem: React.FC<Props> = ({ todo }) => {
       inputTodoRef.current?.focus();
     }
   }, [isEditing]);
-
   const updateTodoCompleteValue = (itemID: number) => {
-    setIsLoader(true);
-
     const newTodo = {
       ...todo,
       completed: !todo.completed,
     };
+
+    setProcessingIds(prevState => [...prevState, todo.id]);
 
     updateTodo(itemID, newTodo)
       .then(todoValue => {
@@ -48,7 +50,9 @@ export const TodoItem: React.FC<Props> = ({ todo }) => {
       })
       .finally(() => {
         inputTodoRef.current?.focus();
-        setIsLoader(false);
+        setProcessingIds(prevState =>
+          prevState.filter(element => element !== todo.id),
+        );
       });
   };
 
@@ -56,7 +60,6 @@ export const TodoItem: React.FC<Props> = ({ todo }) => {
     const trimedQueryEditing = queryEditing.trim();
 
     if (trimedQueryEditing === todo.title) {
-      setIsLoader(false);
       setIsEditing(false);
     }
 
@@ -65,6 +68,8 @@ export const TodoItem: React.FC<Props> = ({ todo }) => {
         ...todo,
         title: trimedQueryEditing,
       };
+
+      setProcessingIds(prevState => [...prevState, todo.id]);
 
       updateTodo(todo.id, newTodo)
         .then(todoValue => {
@@ -81,7 +86,9 @@ export const TodoItem: React.FC<Props> = ({ todo }) => {
         })
         .finally(() => {
           inputTodoRef.current?.focus();
-          setIsLoader(false);
+          setProcessingIds(prevState =>
+            prevState.filter(element => element !== todo.id),
+          );
         });
     }
 
@@ -98,7 +105,6 @@ export const TodoItem: React.FC<Props> = ({ todo }) => {
     }
 
     if (event.key === 'Enter') {
-      setIsLoader(true);
       saveInputValue();
     }
   };
@@ -110,14 +116,12 @@ export const TodoItem: React.FC<Props> = ({ todo }) => {
   };
 
   const handleBlurInput = () => {
-    setIsLoader(true);
     saveInputValue();
     setIsEditing(false);
   };
 
   const handleClickOnRemoveButton = () => {
     handleDeleteTodo(todo.id);
-    setIsLoader(true);
   };
 
   return (
